@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>控制台</title>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+	<div id="root">
+		<Spin size="large" fix v-if="loading"></Spin>
+		<el-container>
+			<el-header>
+				<a href="/" class="layout-logo">KUIPMAKE SEO</a>
+				<div class="layout-ceiling-main">
+					<a href="javascript:void(0)">{{ user.name }}</a> |
+					<a href="javascript:void(0)">logout</a>
+				</div>
+			</el-header>
+			<el-main>
+				<div class="detail-card">
+					<div class="detail-card-header"><h2>Project Detail</h2></div>
+					<div class="detail-card-body">
+						<div>
+							<el-row :gutter="10" style="margin-bottom: 20px;">
+								<el-col :span="4"><div class="label">Project Name</div></el-col>
+								<el-col :span="18">
+									<el-input v-model="project_name" size="small">
+										<el-button slot="append" type="primary" @click="resetName" :loading="updatingName">reset</el-button>
+									</el-input>
+								</el-col>
+							</el-row>
+							<el-row :gutter="10" style="margin-bottom: 20px;">
+								<el-col :span="4"><div class="label">Base Url</div></el-col>
+								<el-col :span="18">
+									<el-input v-model="base_url" size="small">
+										<el-button slot="append" type="primary" @click="resetUrl" :loading="updatingUrl">reset</el-button>
+									</el-input>
+								</el-col>
+							</el-row>
+							<el-row :gutter="10" style="margin-bottom: 20px;">
+								<el-col :span="4"><div class="label">Project Key</div></el-col>
+								<el-col :span="18">
+									<el-input v-model="project.project_key" :disabled="true" size="small">
+										<el-button slot="append" type="primary" @click="refreshKey" :loading="updatingKey"><i class="el-icon-refresh"></i></el-button>
+										<el-button slot="append" type="primary" @click="copyKey"><i class="el-icon-document" ></i></el-button>
+									</el-input>
+								</el-col>
+							</el-row>
+							<el-row :gutter="10">
+								<el-col :span="4"><div class="label">Project Rules</div></el-col>
+								<el-col :span="4"><el-button size="small" icon="el-icon-plus" type="primary" circle @click="createFormVisible = true"></el-button></el-col>
+							</el-row>
+							<el-row :gutter="10" style="margin-bottom: 20px;">
+								<el-col :span="1"><div class="label"></div></el-col>
+								<el-col :span="23">
+									<el-table :data="rules" stripe style="width: 100%">
+										<el-table-column prop="path" label="path">
+										</el-table-column>
+										<el-table-column prop="meta" label="meta">
+											<template slot-scope="scope">
+												<i :class="{ 'el-icon-check': scope.row.meta }" ></i>
+											</template>
+										</el-table-column>
+										<el-table-column
+											prop="selector"
+											label="selector">
+										</el-table-column>
+										<el-table-column prop="fn" label="fn">
+											<template slot-scope="scope">
+												<i :class="{ 'el-icon-check': scope.row.fn }" ></i>
+											</template>
+										</el-table-column>
+										<el-table-column prop="millisecond" label="millisecond">
+										</el-table-column>
+										<el-table-column prop="reload" label="reload">
+											<template slot-scope="scope">
+												<i :class="{ 'el-icon-check': scope.row.reload }" ></i>
+											</template>
+										</el-table-column>
+										<el-table-column
+											fixed="right"
+											label="opration"
+											width="100">
+											<template slot-scope="scope">
+											<el-button type="text" size="small" @click="onDelete(scope.row)">delete</el-button>
+											<el-button type="text" size="small" @click="onEdit(scope.row)">edit</el-button>
+											</template>
+										</el-table-column>
+									</el-table>
+								</el-col>
+							</el-row>
+						</div>
+					</div>
+					<el-row :gutter="10" class="delete-input">
+						<el-col :span="4"><div class="label">Delete Project</div></el-col>
+						<el-col :span="18">
+							<el-input v-model="deleteProjectName" placeholder="input project name here" size="small">
+								<el-button slot="append" type="primary" @click="deleteProject" :disabled="disabled">delete</el-button>
+							</el-input>
+						</el-col>
+					</el-row>
+				</div>
+			</el-main>
+			<footer class="detail-page-footer">
+				2015-2019 &copy; KUIPMAKE
+			</footer>
+			<el-dialog title="Add Rule" :visible.sync="createFormVisible" width="640px">
+				<el-form ref="form" :model="rule" label-width="80px" size="small">
+					<el-form-item label="path">
+						<el-input v-model="rule.path"></el-input>
+						<span>syntax reference<a href="https://www.npmjs.com/package/path-to-regexp" target="_black"> path-to-regexp</a></span>
+					</el-form-item>
+					<el-form-item label="meta">
+						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="KUIPMAKE">'></el-input>
+					</el-form-item>
+					<el-form-item label="type">
+						<el-radio-group v-model="ruleType">
+							<el-tooltip class="item" effect="dark" content="wait for specified element appearance" placement="top-start">
+								<el-radio-button label="selector"></el-radio-button>
+							</el-tooltip>
+							<el-tooltip class="item" effect="dark" content="wait for function returns a truthy value" placement="top">
+								<el-radio-button label="fn"></el-radio-button>
+							</el-tooltip>
+							<el-tooltip class="item" effect="dark" content="wait for x milliseconds" placement="top-end">
+								<el-radio-button label="millisecond"></el-radio-button>
+							</el-tooltip>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item label="rule">
+						<el-input type="text" v-model="rule.selector" v-if="ruleType === 'selector'" placeholder=".selector" clearable></el-input>
+						<el-input type="textarea" v-model="rule.fn" v-else-if="ruleType === 'fn'" placeholder="() => !!document.querySelector('.selector')"></el-input>
+						<el-input type="number" v-model="rule.millisecond" v-else placeholder="1000" min=0 step=1 clearable></el-input>
+					</el-form-item>
+					<el-form-item label="reload">
+						<el-radio-group v-model="rule.reload">
+							<el-radio-button label=1> yes </el-radio-button>
+							<el-radio-button label=0> no  </el-radio-button>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" @click="createRule" :loading="processing">confirm</el-button>
+						<el-button @click="onCancel">cancel</el-button>
+					</el-form-item>
+				</el-form>
+			</el-dialog>
+			<el-dialog title="Edit Rule" :visible.sync="editFormVisible" width="640px">
+				<el-form ref="form" :model="rule" label-width="80px" size="small">
+					<el-form-item label="path">
+						<el-input v-model="rule.path"></el-input>
+					</el-form-item>
+					<el-form-item label="meta">
+						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="KUIPMAKE">'></el-input>
+					</el-form-item>
+					<el-form-item label="type">
+						<el-tooltip class="item" effect="dark" content="priority: selector > fn > millisecond" placement="right-end">
+							<el-radio-group v-model="ruleType">
+									<el-tooltip class="item" effect="dark" content="wait for specified element appearance" placement="top-start">
+										<el-radio-button label="selector"></el-radio-button>
+									</el-tooltip>
+									<el-tooltip class="item" effect="dark" content="wait for function returns a truthy value" placement="top">
+										<el-radio-button label="fn"></el-radio-button>
+									</el-tooltip>
+									<el-tooltip class="item" effect="dark" content="wait for x milliseconds" placement="top-end">
+										<el-radio-button label="millisecond"></el-radio-button>
+									</el-tooltip>
+							</el-radio-group>
+						</el-tooltip>
+					</el-form-item>
+					<el-form-item label="rule">
+						<el-input type="text" v-model="rule.selector" v-if="ruleType === 'selector'" placeholder=".selector" clearable></el-input>
+						<el-input type="textarea" v-model="rule.fn" v-else-if="ruleType === 'fn'" placeholder="() => !!document.querySelector('.selector')"></el-input>
+						<el-input type="number" v-model="rule.millisecond" v-else placeholder="1000" min=0 step=1 clearable></el-input>
+					</el-form-item>
+					<el-form-item label="reload">
+						<el-radio-group v-model="rule.reload">
+							<el-radio-button label=1> yes </el-radio-button>
+							<el-radio-button label=0> no  </el-radio-button>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" @click="editRule" :loading="processing">confirm</el-button>
+						<el-button @click="onCancel">cancel</el-button>
+					</el-form-item>
+				</el-form>
+			</el-dialog>
+		</el-container>
+	</div>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.6/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<script>
+		new Vue({
+			el: '#root',
+			data: {
+				user: { name: 'admin' },
+				loading: true,
+				project_name: '',
+				base_url: '',
+				project: {},
+				ruleType: 'selector',
+				rule: {},
+				rules: [],
+				processing: false,
+				updatingKey: false,
+				updatingName: false,
+				updatingUrl: false,
+				createFormVisible: false,
+				editFormVisible: false,
+				deleteProjectName: ''
+			},
+			computed: {
+				disabled() {
+					return this.deleteProjectName !== this.project.project_name;
+				}
+			},
+			mounted() {
+				var token = localStorage.getItem('token');
+				if (!token) {
+					window.location.href = "/login";
+				} else {
+					axios.defaults.headers.common['Authorization']  = token;
+					this.getData();
+				}
+			},
+			filters: {
+				withContent (value) {
+					if (!value) return '';
+					return 'el-icon-check';
+				}
+			},
+			methods: {
+				getData() {
+					const search = window.location.search;
+					const fruit = search.match(/\?id=(\w+)/);
+					if (fruit) {
+						const id = fruit[1];
+						axios.get(
+						`/api/project/${id}`
+						).then(res => {
+							this.reLogin(res.data.status);
+							if (res.data.status === 200) {
+								const data = res.data.data || {};
+								this.project = data;
+								this.project_name = data.project_name;
+								this.base_url = data.base_url;
+								this.rules = data.rules || [];
+								this.loading = false;
+							} else {
+								this.$message.error('fetch data failed， back to project list page in 3s');
+								setTimeout(() => {
+									window.location.href = '/projects';
+								}, 3000);
+							}
+						});
+					} else {
+						window.location.href = '/projects';
+					}
+				},
+				resetName() {
+					this.updatingName = true;
+					axios.post(
+						`/api/project/${this.project.id}/name`,
+						{ project_name: this.project_name }
+					).then(res => {
+						this.updatingName = false;
+						this.reLogin(res.data.status);
+						if (res.data.status === 200) {
+							this.project_name = this.project.project_name = res.data.data;
+							this.$message({
+								type: 'success',
+								message: 'name has been modified successfully'
+							});
+						} else {
+							this.$message({
+								type: 'info',
+								message: 'reset name failed'
+							});
+						}
+					});
+				},
+				resetUrl() {
+					this.updatingUrl = true;
+					axios.post(
+						`/api/project/${this.project.id}/base`,
+						{ base_url: this.base_url }
+					).then(res => {
+						this.updatingUrl = false;
+						this.reLogin(res.data.status);
+						if (res.data.status === 200) {
+							this.base_url = this.project.base_url = res.data.data;
+							this.$message({
+								type: 'success',
+								message: 'url has been modified successfully'
+							});
+						} else {
+							this.$message({
+								type: 'info',
+								message: 'reset url failed'
+							});
+						}
+					});
+				},
+				refreshKey() {
+					this.$confirm('want new key ? that will makes your previous key disabled', 'Warning', {
+						confirmButtonText: 'comfirm',
+						cancelButtonText: 'cancel',
+						type: 'warning'
+					}).then(() => {
+						const { id } = this.project;
+						this.updatingKey = true;
+						axios.get(
+							`/api/project/${id}/key`
+						).then(res => {
+							this.updatingKey = false;
+							this.reLogin(res.data.status);
+							if (res.data.status === 200) {
+								this.project.project_key = res.data.data;
+								this.$message({
+									type: 'success',
+									message: 'key has been modified successfully'
+								});
+							} else {
+								this.$message({
+									type: 'info',
+									message: 'generate failed'
+								});
+							}
+						});
+					})
+				},
+				createRule() {
+					const rule = Object.assign({}, this.rule);
+					if (!rule.path) {
+						this.$message.error('path is required');
+						return;
+					}
+
+					if (!rule.selector && !rule.fn && !rule.millisecond) {
+						this.$message.error('at least rule is required');
+						return;
+					}
+
+					rule.selector = rule.selector ? rule.selector.trim() : '';
+					rule.fn = rule.fn ? rule.fn.trim() : '';
+					rule.millisecond = rule.millisecond ? parseInt(rule.millisecond) : 0;
+
+					rule.project_id = this.project.id;
+					this.processing = true;
+					axios.post(
+						'/api/rule',
+						rule
+					).then(res => {
+						this.processing = false;
+						this.reLogin(res.data.status);
+						if (res.data.status === 200) {
+							this.rules.unshift(res.data.data);
+							this.onCancel();
+						} else {
+							this.$message({
+								type: 'info',
+								message: 'add rule failed'
+							});
+						}
+					});
+				},
+				editRule() {
+					const rule = Object.assign({}, this.rule);
+					if (!rule.path) {
+						this.$message.error('path is required');
+						return;
+					}
+
+					if (!rule.selector && !rule.fn && !rule.millisecond) {
+						this.$message.error('at least rule is required');
+						return;
+					}
+
+					rule.selector = rule.selector ? rule.selector.trim() : '';
+					rule.fn = rule.fn ? rule.fn.trim() : '';
+					rule.millisecond = rule.millisecond ? parseInt(rule.millisecond) : 0;
+
+					rule.project_id = this.project.id;
+					const { id } = rule;
+					this.processing = true;
+					axios.patch(
+						`/api/rule/${id}`,
+						rule
+					).then(res => {
+						this.reLogin(res.data.status);
+						if (res.data.status === 200) {
+							this.getData();
+							this.processing = false;
+							this.onCancel();
+						}
+					});
+				},
+				copyKey() {
+					const input = document.createElement("input");
+					input.setAttribute('readonly', 'readonly');
+					input.setAttribute('value', this.project.project_key);
+					input.setAttribute('style', 'visibility="hidden"');
+					document.body.appendChild(input);
+					input.select();
+					if (document.execCommand('copy')) {
+						document.execCommand('copy');
+						this.$message.success('coppy success');
+					}
+					document.body.removeChild(input);
+				},
+				onDelete(data) {
+					this.$confirm('delete rule ?', 'Warning', {
+						confirmButtonText: 'comfirm',
+						cancelButtonText: 'cancel',
+						type: 'warning'
+					}).then(() => {
+						axios.delete(
+							`/api/rule/${data.id}`
+						).then(res => {
+							this.reLogin(res.data.status);
+							if (res.data.status === 200) {
+								this.$message({
+									type: 'success',
+									message: 'delete success'
+								});
+
+								this.getData();
+							} else {
+								this.$message({
+									type: 'info',
+									message: 'delete failed'
+								});
+							}
+						});
+					})
+				},
+				onEdit(data) {
+					this.rule = Object.assign({}, data);
+					this.editFormVisible = true;
+				},
+				onCancel() {
+					this.createFormVisible = false;
+					this.editFormVisible = false;
+					this.rule = {};
+					this.ruleType = 'selector';
+				},
+				deleteProject() {
+					const { project_name, id} = this.project;
+					this.$confirm(`delete project ${project_name}?`, 'Warning', {
+						confirmButtonText: 'comfirm',
+						cancelButtonText: 'cancel',
+						type: 'warning'
+					}).then(() => {
+						axios.delete(
+							`/api/projects/${id}`
+						).then(res => {
+							this.reLogin(res.data.status);
+							if (res.data.status === 200) {
+								this.$message({
+									type: 'success',
+									message: 'delete success, back to project list page!'
+								});
+								setTimeout(() => {
+									window.location.href = "/projects";
+								}, 1500)
+							} else {
+								this.$message({
+									type: 'info',
+									message: 'delete failed'
+								});
+							}
+						});
+					})
+				},
+				reLogin(status) {
+					if (status === 403) {
+						this.$message.error('verify user failed， jump to login page in 3s');
+						setTimeout(() => {
+							window.location.href = '/login';
+						}, 3000);
+					}
+				}
+			}
+		})
+	</script>
+</body>
+</html>

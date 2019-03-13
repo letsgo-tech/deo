@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>控制台</title>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.6/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+	<div id="root">
+		<Spin size="large" fix v-if="loading"></Spin>
+		<el-container>
+			<el-header>
+				<div class="layout-logo">KUIPMAKE SEO</div>
+				<div class="layout-ceiling-main">
+					<a href="javascript:void(0)">{{ user.name }}</a> |
+					<a href="javascript:void(0)">logout</a>
+				</div>
+			</el-header>
+			<el-main>
+				<div class="main-header">
+					<div>
+						<i class="el-icon-menu"></i>
+						<span style="font-size: 16px;">projects {{projects.length}}</span>
+					</div>
+					<el-button type="primary" icon="el-icon-plus" @click="createFormVisible = true">新增项目</el-button>
+				</div>
+				<div class="projects">
+					<el-row :gutter="12">
+						<el-col :span="8" v-for="(item, index) in projects" style="margin-top: 8px">
+							<el-card shadow="hover">
+								<div class="app-item">
+									<div class="app-item-meta">
+										<a href="javascript:void(0)" @click="jump(item.id)" class="app-item-name">{{ item.project_name }}</a>
+									</div>
+								</div>
+								<div>
+									<el-input placeholder="请输入内容" v-model="item.project_key" :disabled="true">
+										<template slot="prepend">project_key</template>
+										<el-button slot="append" type="primary" @click="copyKey(item.project_key)"><i class="el-icon-document" ></i></el-button>
+									</el-input>
+								</div>
+							</el-card>
+						</el-col>
+					</el-row>
+				</div>
+			</el-main>
+			<el-footer>
+				2015-2019 &copy; KUIPMAKE
+			</el-footer>
+			<el-dialog title="Add Project" :visible.sync="createFormVisible">
+				<el-form ref="form" label-width="110px" size="small">
+					<el-form-item label="project name">
+						<el-input v-model="project_name" autocomplete="off" clearable></el-input>
+					</el-form-item>
+					<el-form-item label="base url">
+						<el-input v-model="base_url" autocomplete="off" clearable></el-input>
+					</el-form-item>
+					<el-form-item>
+							<el-button @click="createFormVisible = false" >取 消</el-button>
+							<el-button type="primary" @click="createProject" :loading="processing">确 定</el-button>
+					</el-form-item>
+				</el-form>
+			</el-dialog>
+		</el-container>
+	</div>
+	<script>
+		new Vue({
+			el: '#root',
+			data: {
+				user: { name: 'admin' },
+				loading: true,
+				projects: [],
+				project_name: '',
+				base_url: '',
+				processing: false,
+				createFormVisible: false,
+			},
+			computed: {
+				name() {
+					return this.user.name
+				}
+			},
+			mounted() {
+				var token = localStorage.getItem('token');
+				if (!token) {
+					window.location.href = "/login";
+				} else {
+					axios.defaults.headers.common['Authorization']  = token;
+					this.getData();
+				}
+			},
+			methods: {
+				getData() {
+					axios.get(
+						'/api/projects'
+					).then(res => {
+						this.reLogin(res.data.status);
+						if (res.data.status === 200) {
+							this.projects = res.data.data || [];
+							this.loading = false;
+						}
+					});
+				},
+				createProject() {
+					this.createFormVisible = false;
+					axios.post(
+						'/api/projects',
+						{
+							project_name: this.project_name,
+							base_url: this.base_url
+						}
+					).then(res => {
+						this.reLogin(res.data.status);
+						this.getData();
+					});
+				},
+				copyKey(key) {
+					const input = document.createElement("input");
+					input.setAttribute('readonly', 'readonly');
+					input.setAttribute('value', key);
+					input.setAttribute('style', 'visibility="hidden"');
+					document.body.appendChild(input);
+					input.select();
+					if (document.execCommand('copy')) {
+						document.execCommand('copy');
+						this.$message.success('复制成功');
+					}
+					document.body.removeChild(input);
+				},
+				jump(id) {
+					window.location.href=`/project?id=${id}`;
+				},
+				reLogin(status) {
+					if (status === 403) {
+						this.$message.error('用户信息验证失败， 3秒后跳转至登录页');
+						setTimeout(() => {
+							window.location.href = '/login';
+						}, 3000);
+					}
+				}
+			}
+		})
+	</script>
+</body>
+</html>

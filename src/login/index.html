@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>render2seo-login</title>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+	<div class="login-page">
+		<h1>Login</h1>
+		<div class="wrapper">
+			<input type="text" name="username" placeholder="Username" required="required" />
+			<input type="password" name="password" placeholder="Password" required="required" />
+			<button id="btn" type="submit" class="btn btn-primary btn-block btn-large">Login</button>
+		</div>
+	</div>
+
+	<script>
+		var btn = document.getElementById('btn');
+		var userInput = document.getElementsByName('username');
+		var pwdInput = document.getElementsByName('password');
+
+		btn.addEventListener('click', function() {
+			var username = userInput[0] && userInput[0].value;
+			var password = pwdInput[0] && pwdInput[0].value;
+			if (username && password) {
+				axios.post(
+					'/api/login',
+					{ username, password },
+				).then(function(res) {
+						if (res.data.status === 200) {
+							localStorage.setItem('token', res.data.token);
+							window.location.href = '/projects';
+						} else {
+							alert(res.data.msg);
+						}
+				});
+			}
+		});
+	</script>
+</body>
+</html>
