@@ -13,7 +13,7 @@
 		<Spin size="large" fix v-if="loading"></Spin>
 		<el-container>
 			<el-header>
-				<a href="/" class="layout-logo">KUIPMAKE SEO</a>
+				<a href="/" class="layout-logo">DEO</a>
 				<div class="layout-ceiling-main">
 					<a href="javascript:void(0)">{{ user.name }}</a> |
 					<a href="javascript:void(0)">logout</a>
@@ -105,7 +105,7 @@
 				</div>
 			</el-main>
 			<footer class="detail-page-footer">
-				2015-2019 &copy; KUIPMAKE
+				2015-2019 &copy; DEO
 			</footer>
 			<el-dialog title="Add Rule" :visible.sync="createFormVisible" width="640px">
 				<el-form ref="form" :model="rule" label-width="80px" size="small">
@@ -114,7 +114,7 @@
 						<span>syntax reference<a href="https://www.npmjs.com/package/path-to-regexp" target="_black"> path-to-regexp</a></span>
 					</el-form-item>
 					<el-form-item label="meta">
-						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="KUIPMAKE">'></el-input>
+						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="DEO">'></el-input>
 					</el-form-item>
 					<el-form-item label="type">
 						<el-radio-group v-model="ruleType">
@@ -152,7 +152,7 @@
 						<el-input v-model="rule.path"></el-input>
 					</el-form-item>
 					<el-form-item label="meta">
-						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="KUIPMAKE">'></el-input>
+						<el-input type="textarea" v-model="rule.meta" placeholder='<meta name="keywords" content="DEO">'></el-input>
 					</el-form-item>
 					<el-form-item label="type">
 						<el-tooltip class="item" effect="dark" content="priority: selector > fn > millisecond" placement="right-end">

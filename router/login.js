@@ -27,7 +27,7 @@ router.post('/', (req, res) => {
 					username: vals[0].username
 				};
 
-				const cert = 'kuipmake';
+				const cert = 'deo';
 
 				const token = jwt.sign(content, cert);
 				res.send({

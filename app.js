@@ -51,7 +51,7 @@ app.use((req, res, next) => {
 
 	if (url.indexOf('/api/projects') > -1 || url.indexOf('/api/project') > -1 || url.indexOf('/api/rule') > -1) {
 		const token = req.headers.authorization;
-		jwt.verify(token, 'kuipmake', (err, decode) => {
+		jwt.verify(token, 'deo', (err, decode) => {
 			if (err) {
 				res.send({
 					status: 403,
