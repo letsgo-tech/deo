@@ -15,8 +15,8 @@
 			<el-header>
 				<a href="/" class="layout-logo">DEO</a>
 				<div class="layout-ceiling-main">
-					<a href="javascript:void(0)">{{ user.name }}</a> |
-					<a href="javascript:void(0)">logout</a>
+					<span href="javascript:void(0)">{{ user.name }}</span>
+					<a href="javascript:void(0)" @click="logout">LOGOUT</a>
 				</div>
 			</el-header>
 			<el-main>
@@ -35,7 +35,7 @@
 							<el-row :gutter="10" style="margin-bottom: 20px;">
 								<el-col :span="4"><div class="label">Base Url</div></el-col>
 								<el-col :span="18">
-									<el-input v-model="base_url" size="small">
+									<el-input v-model="base_url" size="small" placeholder="BaseUrl should include scheme, e.g. https://">
 										<el-button slot="append" type="primary" @click="resetUrl" :loading="updatingUrl">reset</el-button>
 									</el-input>
 								</el-col>
@@ -78,6 +78,11 @@
 										<el-table-column prop="reload" label="reload">
 											<template slot-scope="scope">
 												<i :class="{ 'el-icon-check': scope.row.reload }" ></i>
+											</template>
+										</el-table-column>
+										<el-table-column prop="noscript" label="noscript">
+											<template slot-scope="scope">
+												<i :class="{ 'el-icon-check': scope.row.noscript }" ></i>
 											</template>
 										</el-table-column>
 										<el-table-column
@@ -140,13 +145,19 @@
 							<el-radio-button label=0> no  </el-radio-button>
 						</el-radio-group>
 					</el-form-item>
+					<el-form-item label="noscript">
+						<el-radio-group v-model="rule.noscript">
+							<el-radio-button label=1> yes </el-radio-button>
+							<el-radio-button label=0> no  </el-radio-button>
+						</el-radio-group>
+					</el-form-item>
 					<el-form-item>
 						<el-button type="primary" @click="createRule" :loading="processing">confirm</el-button>
 						<el-button @click="onCancel">cancel</el-button>
 					</el-form-item>
 				</el-form>
 			</el-dialog>
-			<el-dialog title="Edit Rule" :visible.sync="editFormVisible" width="640px">
+			<el-dialog title="Edit Rule" :visible.sync="editFormVisible" width="640px" :before-close="onCancel">
 				<el-form ref="form" :model="rule" label-width="80px" size="small">
 					<el-form-item label="path">
 						<el-input v-model="rule.path"></el-input>
@@ -180,6 +191,12 @@
 							<el-radio-button label=0> no  </el-radio-button>
 						</el-radio-group>
 					</el-form-item>
+					<el-form-item label="noscript">
+						<el-radio-group v-model="rule.noscript">
+							<el-radio-button label=1> yes </el-radio-button>
+							<el-radio-button label=0> no  </el-radio-button>
+						</el-radio-group>
+					</el-form-item>
 					<el-form-item>
 						<el-button type="primary" @click="editRule" :loading="processing">confirm</el-button>
 						<el-button @click="onCancel">cancel</el-button>
@@ -195,7 +212,7 @@
 		new Vue({
 			el: '#root',
 			data: {
-				user: { name: 'admin' },
+				user: { name: '' },
 				loading: true,
 				project_name: '',
 				base_url: '',
@@ -218,18 +235,16 @@
 			},
 			mounted() {
 				var token = localStorage.getItem('token');
+				var username = localStorage.getItem('username');
 				if (!token) {
 					window.location.href = "/login";
 				} else {
+					this.user.name = username;
 					axios.defaults.headers.common['Authorization']  = token;
 					this.getData();
 				}
 			},
 			filters: {
-				withContent (value) {
-					if (!value) return '';
-					return 'el-icon-check';
-				}
 			},
 			methods: {
 				getData() {
@@ -338,7 +353,7 @@
 						return;
 					}
 
-					if (!rule.selector && !rule.fn && !rule.millisecond) {
+					if (!(rule.reload || rule.noscript) && !(rule.selector && rule.fn && rule.millisecond)) {
 						this.$message.error('at least rule is required');
 						return;
 					}
@@ -373,7 +388,7 @@
 						return;
 					}
 
-					if (!rule.selector && !rule.fn && !rule.millisecond) {
+					if (!(rule.reload || rule.noscript) && !(rule.selector && rule.fn && rule.millisecond)) {
 						this.$message.error('at least rule is required');
 						return;
 					}
@@ -481,7 +496,11 @@
 							window.location.href = '/login';
 						}, 3000);
 					}
-				}
+				},
+				logout() {
+					localStorage.removeItem('token');
+					window.location.href = '/login';
+				},
 			}
 		})
 	</script>

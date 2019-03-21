@@ -18,8 +18,8 @@
 			<el-header>
 				<div class="layout-logo">DEO</div>
 				<div class="layout-ceiling-main">
-					<a href="javascript:void(0)">{{ user.name }}</a> |
-					<a href="javascript:void(0)">logout</a>
+					<span href="javascript:void(0)">{{ user.name }}</span>
+					<a href="javascript:void(0)" @click="logout">LOGOUT</a>
 				</div>
 			</el-header>
 			<el-main>
@@ -73,7 +73,7 @@
 		new Vue({
 			el: '#root',
 			data: {
-				user: { name: 'admin' },
+				user: { name: '' },
 				loading: true,
 				projects: [],
 				project_name: '',
@@ -88,9 +88,11 @@
 			},
 			mounted() {
 				var token = localStorage.getItem('token');
+				var username = localStorage.getItem('username');
 				if (!token) {
 					window.location.href = "/login";
 				} else {
+					this.user.name = username;
 					axios.defaults.headers.common['Authorization']  = token;
 					this.getData();
 				}
@@ -143,7 +145,11 @@
 							window.location.href = '/login';
 						}, 3000);
 					}
-				}
+				},
+				logout() {
+					localStorage.removeItem('token');
+					window.location.href = '/login';
+				},
 			}
 		})
 	</script>

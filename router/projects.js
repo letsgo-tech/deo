@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
 		if (err) {
 			res.json({
 				status: 500,
-				msg: 'internal error',
+				msg: 'connect db failed',
 			});
 		} else if (vals.length > 0){
 			res.json({
@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
 				if (err) {
 					res.json({
 						status: 500,
-						msg: 'internal error',
+						msg: 'add project failed',
 					});
 				} else {
 					res.json({
@@ -72,14 +72,14 @@ router.delete('/:id', (req, res) => {
 		if (err) {
 			res.json({
 				status: 500,
-				msg: 'internal error',
+				msg: 'connect db failed',
 			});
 		} else {
 			query('DELETE FROM project WHERE id=?', [id], (err, vals, fileds) => {
 				if (err) {
 					res.json({
 						status: 500,
-						msg: 'internal error',
+						msg: 'delete project failed',
 					});
 				} else {
 					res.json({

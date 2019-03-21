@@ -8,22 +8,20 @@ const moment = require('moment');
 
 router.post('/', (req, res) => {
 
-	const { project_id, path, meta, selector, fn, millisecond, reload = 0 } = req.body;
+	const { project_id, path, meta, selector, fn, millisecond, reload = 0, noscript = 0 } = req.body;
 
 	query('SELECT * FROM project WHERE id = ?', [project_id], (err, projects, fileds) => {
 		if (err) {
-			console.log(1, err);
 			res.json({
 				status: 500,
-				msg: 'internal error',
+				msg: 'connect db failed',
 			});
 		} else if (projects.length > 0){
 			query('SELECT * FROM rule WHERE path = ?', path, (err, rules, fileds) => {
 				if (err) {
-					console.log(2, err);
 					res.json({
 						status: 500,
-						msg: 'internal error',
+						msg: 'connect db failed',
 					});
 				} else if (rules.length > 0){
 					res.json({
@@ -42,12 +40,12 @@ router.post('/', (req, res) => {
 						fn,
 						millisecond,
 						reload,
+						noscript,
 						created: time,
 						updated: time
 					}
 					query('INSERT INTO rule SET ?', rule, (err, rules, fileds) => {
 						if (err) {
-							console.log(3, err);
 							res.json({
 								status: 500,
 								msg: 'internal error',
@@ -72,13 +70,13 @@ router.post('/', (req, res) => {
 
 router.patch('/:id', (req, res) => {
 	const { id } = req.params;
-	const { path, meta, selector, fn, millisecond, reload } = req.body;
+	const { path, meta, selector, fn, millisecond, reload=0, noscript=0 } = req.body;
 	const time = moment().format("YYYY-MM-DD h:mm:ss");
-	query('UPDATE rule SET path=?, meta=?, selector=?, fn=?, millisecond=?, reload=?, updated=?  WHERE id=?', [path, meta, selector, fn, millisecond, reload, time, id], (err, rules, fileds) => {
+	query('UPDATE rule SET path=?, meta=?, selector=?, fn=?, millisecond=?, reload=?, noscript=?, updated=?  WHERE id=?', [path, meta, selector, fn, millisecond, reload, noscript, time, id], (err, rules, fileds) => {
 		if (err) {
 			res.json({
 				status: 500,
-				msg: 'internal error',
+				msg: 'update rule failed',
 			});
 		} else {
 			res.json({
@@ -95,7 +93,7 @@ router.delete('/:id', (req, res) => {
 		if (err) {
 			res.json({
 				status: 500,
-				msg: 'internal error',
+				msg: 'delete rule failed',
 			});
 		} else {
 			res.json({

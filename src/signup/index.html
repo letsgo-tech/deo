@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>render2seo-signup</title>
+	<link rel="stylesheet" href="../login/style.css" type="text/css" />
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+	<div class="signup-page">
+		<h1>Signup</h1>
+		<div class="wrapper">
+			<input type="text" name="username" placeholder="Username" required="required" />
+			<input type="password" name="password" placeholder="Password" required="required" />
+			<input type="password" name="passwordRepeat" placeholder="Password" required="required" />
+			<button id="btn" type="submit" class="btn btn-primary btn-block btn-large">Sign up</button>
+			<p class="signup-tip">Already registered ? <a href="/login">Login</a></p>
+		</div>
+	</div>
+
+	<script>
+		var btn = document.getElementById('btn');
+		var userInput = document.getElementsByName('username');
+		var pwdInput = document.getElementsByName('password');
+		var pwdRepeatInput = document.getElementsByName('passwordRepeat');
+
+		btn.addEventListener('click', function() {
+			var username = userInput[0] && userInput[0].value;
+			var password = pwdInput[0] && pwdInput[0].value;
+			var passwordRepeat = pwdRepeatInput[0] && pwdRepeatInput[0].value;
+			if (password !== passwordRepeat) {
+				alert('The password confirmation does not match');
+				return;
+			}
+
+			if (!/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.{6,20})/.test(password)) {
+				alert('It is recommended to use a combination of two or more letters and numbers, 6-20 characters.');
+				return;
+			}
+
+			if (username && password && passwordRepeat) {
+				axios.post(
+					'/api/signup',
+					{ username, password, passwordRepeat },
+				).then(function(res) {
+						if (res.data.status === 200) {
+							localStorage.setItem('username', username);
+							window.location.href = '/login';
+						} else {
+							alert(res.data.msg);
+						}
+				});
+			}
+		});
+	</script>
+</body>
+</html>

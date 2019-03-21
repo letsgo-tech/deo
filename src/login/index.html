@@ -15,6 +15,7 @@
 			<input type="text" name="username" placeholder="Username" required="required" />
 			<input type="password" name="password" placeholder="Password" required="required" />
 			<button id="btn" type="submit" class="btn btn-primary btn-block btn-large">Login</button>
+			<p class="signup-tip">Not a member ? <a href="/signup">Sign up</a></p>
 		</div>
 	</div>
 
@@ -22,24 +23,40 @@
 		var btn = document.getElementById('btn');
 		var userInput = document.getElementsByName('username');
 		var pwdInput = document.getElementsByName('password');
+		var username = localStorage.getItem('username');
+		if (username) {
+			userInput[0].value = username;
+		}
+		var loading;
 
-		btn.addEventListener('click', function() {
+		function login() {
+			if (loading) return;
 			var username = userInput[0] && userInput[0].value;
 			var password = pwdInput[0] && pwdInput[0].value;
 			if (username && password) {
+				loading = true;
 				axios.post(
 					'/api/login',
 					{ username, password },
 				).then(function(res) {
 						if (res.data.status === 200) {
 							localStorage.setItem('token', res.data.token);
+							localStorage.setItem('username', username);
 							window.location.href = '/projects';
 						} else {
 							alert(res.data.msg);
 						}
+						loading =false;
 				});
 			}
-		});
+		}
+
+		btn.addEventListener('click', login);
+		window.addEventListener('keydown', function(e) {
+			if (e.keyCode === 13) {
+				login();
+			}
+		})
 	</script>
 </body>
 </html>

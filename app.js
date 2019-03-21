@@ -70,6 +70,10 @@ app.get('/login', (req, res) => {
 	res.sendFile(__dirname + '/./src/login/index.html');
 });
 
+app.get('/signup', (req, res) => {
+	res.sendFile(__dirname + '/./src/signup/index.html');
+});
+
 app.get('/projects', (req, res) => {
 	res.sendFile(__dirname + '/./src/projects/index.html');
 });
@@ -80,6 +84,7 @@ app.get('/project', (req, res) => {
 
 
 app.use('/api/login', require('./router/login.js'));
+app.use('/api/signup', require('./router/signup.js'));
 app.use('/api/projects', require('./router/projects.js'));
 app.use('/api/project', require('./router/project.js'))
 app.use('/api/rule', require('./router/rule.js'))

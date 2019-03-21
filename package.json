@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"dev": "NODE_ENV=development node app.js --config config.default.json",
 		"start": "node app.js --config ./config.json",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -14,6 +15,7 @@
 		"express": "^4.16.4",
 		"js-sha256": "^0.9.0",
 		"jsonwebtoken": "^8.4.0",
+		"log4js": "^4.0.2",
 		"moment": "^2.24.0",
 		"mysql": "^2.16.0",
 		"mysql2": "^1.6.5",

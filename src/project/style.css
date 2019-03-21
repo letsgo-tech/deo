@@ -35,10 +35,18 @@ html, body, #root {
 
 .layout-ceiling-main{
 	margin-right: 15px;
-}
-.layout-ceiling-main a{
-	color: #9ba7b5;
 	font-size: 16px;
+}
+.layout-ceiling-main span{
+	font-weight: 600;
+	color: #FFF;
+	margin-right: 10px;
+}
+
+.layout-ceiling-main>a{
+	font-weight: 600;
+	color: #FFF;
+	text-decoration: none;
 }
 
 .el-main {
